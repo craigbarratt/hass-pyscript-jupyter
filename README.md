@@ -60,7 +60,7 @@ jupyter console --kernel=pyscript
 
 ## Tutorial
 
-There is a Jupyter notebook [tutorial](https://github.com/custom-components/pyscript/blob/master/pyscript_tutorial.ipynb)
+There is a Jupyter notebook [tutorial](https://github.com/craigbarratt/hass-pyscript-jupyter/blob/master/pyscript_tutorial.ipynb)
 that covers many pyscript features.  It can be downlaoded and run interactively in Jupyter
 notebook connected to your live HASS with pyscript.  After you download it, run it with:
 ```
