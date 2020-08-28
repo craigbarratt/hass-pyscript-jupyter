@@ -141,7 +141,7 @@ class RelayPort:
 #
 async def kernel_run(config_filename):
     """Start a new pyscript kernel."""
-    url = HASS_URL + "/api/services/pyscript/jupyter_kernel_start"
+    url = HASS_URL.rstrip("/") + "/api/services/pyscript/jupyter_kernel_start"
     headers = {
         "Content-Type": "application/json",
         "Authorization": "Bearer " + HASS_TOKEN,
