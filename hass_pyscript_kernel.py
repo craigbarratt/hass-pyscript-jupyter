@@ -17,9 +17,15 @@ import sys
 import traceback
 
 #
-# Set HASS_URL to the URL of your HASS http interface
+# Set HASS_HOST to the host name or IP address of your HASS instance
 #
-HASS_URL = "http://localhost:8123"
+HASS_HOST = "YOUR_HASS_HOST_OR_IP"
+
+#
+# Set HASS_URL to the URL of your HASS http interface. Typically the host
+# name will be the same as HASS_HOST above
+#
+HASS_URL = "http://YOUR_HASS_HOST_OR_IP:8123"
 
 #
 # Set HASS_TOKEN to a long-term access token created via the button
@@ -45,8 +51,9 @@ class RelayPort:
         self.name = name
         self.config = config
         self.debug = debug
-        self.ip_host = config["ip"]
+        self.client_host = config["ip"]
         self.client_port = config[name]
+        self.kernel_host = HASS_HOST
         self.client2kernel_task = None
         self.kernel2client_task = None
         self.kernel_connect_task = None
@@ -57,7 +64,7 @@ class RelayPort:
 
         sock = socket.socket()
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER, b"\0" * 8)
-        sock.bind((self.ip_host, 0))
+        sock.bind((self.client_host, 0))
         self.kernel_port = sock.getsockname()[1]
         sock.close()
         config[name] = self.kernel_port
@@ -73,7 +80,7 @@ class RelayPort:
             while True:
                 try:
                     kernel_reader, kernel_writer = await asyncio.open_connection(
-                        self.ip_host, self.kernel_port
+                        self.kernel_host, self.kernel_port
                     )
                     break
                 except Exception:  # pylint: disable=broad-except
@@ -103,7 +110,7 @@ class RelayPort:
                 await status_q.put(["exit", exit_status])
 
         self.client_server = await asyncio.start_server(
-            client_connected, self.ip_host, self.client_port
+            client_connected, self.client_host, self.client_port
         )
 
     async def client_server_stop(self):
@@ -148,7 +155,7 @@ async def kernel_run(config_filename):
     }
     with open(config_filename, "r") as fp:
         config = json.load(fp)
-    ip_host = config["ip"]
+    client_host = config["ip"]
 
     #
     # We act as a tcp relay on all the links between the Jupyter client and pyscript kernel.
@@ -160,24 +167,6 @@ async def kernel_run(config_filename):
         "iopub_port": RelayPort("iopub_port", config),
         "control_port": RelayPort("control_port", config),
     }
-
-    #
-    # There is a potential race condition if this script exits and Jupyter restarts
-    # it before HASS has shutdown the old session.  So before we issue the service
-    # call we check if the iopub_port is free.  If not we wait until it is.
-    #
-    async def null_server(reader, writer):
-        writer.close()
-
-    while True:
-        try:
-            iopub_server = await asyncio.start_server(
-                null_server, ip_host, config["iopub_port"]
-            )
-            iopub_server.close()
-            break
-        except OSError:
-            await asyncio.sleep(0.25)
 
     #
     # now call the service
