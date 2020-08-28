@@ -1,16 +1,14 @@
-# Jupyter kernel shim for HASS Pyscript
+# HASS Pyscript kernel shim for Jupyter
 
 [Pyscript](https://github.com/custom-components/pyscript) provides a kernel that interfaces with the Jupyter
 front-ends (eg, notebook, console and lab). That allows you to develop and test pyscript triggers, functions
 and automation logic interactively. Plus you can interact with much of HASS by looking at state variables
 and calling services as you experiment and develop your own logic and automations.
 
-Jupyter auto-completion (with `<TAB>`) is supported in Jupyter notebook and console. It should
-work after you have typed at least the first character. After you hit `<TAB>` you should see a
-list of potential completions from which you can select.  It's a great way to easily see available
-state variables, functions or services.
-
-This repository provides a shim that sits between HASS pyscript and Jupyter.
+This repository provides a shim that sits between HASS pyscript and Jupyter. When Jupyter starts
+a kernel, it is configured to run the script `hass_pyscript_kernel.py` in this repository. This
+script uses the HASS web interface to do a service call to pyscript that starts the kernel. It
+then helps establish the various socket connections between HASS/pyscript and Jupyter.
 
 ## Installation
 
@@ -77,11 +75,17 @@ documentation.
 Using the tutorial as examples, you can use a Jupyter client to interactively develop and test
 functions, triggers and services.
 
-In a Jupyter session, one or more functions can be defined in each code cell. Every time that cell
-is executed (eg, `<Shift>Return`), those functions are redefined, and any existing trigger
+Jupyter auto-completion (with `<TAB>`) is supported in Jupyter notebook and console. It should
+work after you have typed at least the first character. After you hit `<TAB>` you should see a
+list of potential completions from which you can select.  It's a great way to easily see available
+state variables, functions or services.
+
+In a Jupyter session, one or more functions can be defined in each code cell. Every time that
+cell is executed (eg, `<Shift>Return`), those functions are redefined, and any existing trigger
 decorators with the same function name are canceled and replaced by the new definition. You might
-have other function and trigger definitions in another cell - they won't be affected if their
-names are different, and they will only be replaced when you re-execute that other cell.
+have other function and trigger definitions in another cell - they won't be affected (assuming
+those function names are different), and they will only be replaced when you re-execute that
+other cell.
 
 When the Jupyter session is terminated, its global context is deleted, which means any trigger
 rules, functions, services and variables you created are deleted.  The pyscript Jupyter kernel
@@ -90,9 +94,9 @@ logic, you should copy them to a pyscript script file, and then use the `pyscrip
 to load them. That ensures they will be loaded and run each time you re-start HASS.
 
 If a function you define has been triggered and is currently executing Python code, then re-running
-the cell in which the function is defined or exiting the Jupyter session will not stop or cancel the
-already running function. This is same behavior as `reload`. In pyscript, each triggered function
-(ie, a trigger has occurred and the trigger conditions are met, and the function is actually
+the cell in which the function is defined, or exiting the Jupyter session, will not stop or cancel
+the already running function. This is the same behavior as `reload`. In pyscript, each triggered
+function (ie, a trigger has occurred, the trigger conditions are met, and the function is actually
 executing Python code) runs as an independent task until it finishes. So if you are testing triggers
 of a long-running function (eg, one that uses `task.sleep()` or `task.wait_until()`) you could end up
 with many running instances. It's strongly recommended that you use `task.unique()` to make sure old
