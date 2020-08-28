@@ -26,6 +26,16 @@ cd pyscript
 * Download and extract the latest `hass-pyscript-jupyter-X.XX.zip` file from github releases
 in `KERNEL_DIRECTORY/pyscript`.  Alternatively, you can download the current master version
 of the files (`kernel.json`, `hass_pyscript_kernel.py` and the two logo files) in this directory.
+<details><summary>Click to see the direct download commands</summary>
+
+```
+wget https://github.com/craigbarratt/hass-pyscript-jupyter/raw/master/kernel.json
+wget https://github.com/craigbarratt/hass-pyscript-jupyter/raw/master/hass_pyscript_kernel.py
+wget https://github.com/craigbarratt/hass-pyscript-jupyter/raw/master/logo-32x32.png
+wget https://github.com/craigbarratt/hass-pyscript-jupyter/raw/master/logo-64x64.png
+```
+</details>
+
 * Edit `kernel.json`:
     - replace KERNEL_DIRECTORY by the directory determined above.
     - check the `python` entry in `argv` to make sure it is the latest version of python
