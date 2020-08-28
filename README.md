@@ -52,12 +52,7 @@ Please tell me if you have feedback on how to automate or improve these steps.
 
 ## Running Jupyter
 
-If you download the `pyscript_tutorial.ipynb` notebook, you can open it with:
-```
-jupyter notebook pyscript_tutorial.ipynb
-```
-
-You can open the web-based Jupyter clients (eg, notebook and lab) as usual, eg:
+You can open the browser-based Jupyter clients (eg, notebook and lab) as usual, eg:
 ```
 jupyter notebook
 ```
@@ -72,22 +67,27 @@ jupyter console --kernel=pyscript
 
 There is a Jupyter notebook [tutorial](https://github.com/craigbarratt/hass-pyscript-jupyter/blob/master/pyscript_tutorial.ipynb)
 that covers many pyscript features.  It can be downlaoded and run interactively in Jupyter
-notebook connected to your live HASS with pyscript.  After you download it, run it with:
+notebook connected to your live HASS with pyscript.  You can download the `pyscript_tutorial.ipynb`
+notebook using:
+```
+wget https://github.com/craigbarratt/hass-pyscript-jupyter/raw/master/pyscript_tutorial.ipynb
+```
+and open it with:
 ```
 jupyter notebook pyscript_tutorial.ipynb
 ```
-You can step through each command by hitting `<Shift>Enter`.  There are various
-ways to navigate and run cells in Jupyter that you can read in the Jupyter
-documentation.
+
+You can step through each command by hitting `<Shift>Enter`.  There are various ways to navigate
+and run cells in Jupyter that you can read in the Jupyter documentation.
 
 ## Work Flow
 
 Using the tutorial as examples, you can use a Jupyter client to interactively develop and test
 functions, triggers and services.
 
-Jupyter auto-completion (with `<TAB>`) is supported in Jupyter notebook and console. It should
+Jupyter auto-completion (with `<TAB>`) is supported in Jupyter notebook, console and lab. It should
 work after you have typed at least the first character. After you hit `<TAB>` you should see a
-list of potential completions from which you can select.  It's a great way to easily see available
+list of potential completions from which you can select. It's a great way to easily see available
 state variables, functions or services.
 
 In a Jupyter session, one or more functions can be defined in each code cell. Every time that
@@ -142,10 +142,10 @@ kernel until it is syntactically correct (ie, complete) and the indent on the la
 you define a multi-line function or statement with indenting, you will need to hit `Enter` one more
 time so there is an empty line indicating your code block is complete.
 
-* Jupyter generally assumes the kernel operates in a half-duplex manner - it sends a snippet of code
-to the kernel to be executed, and the result (if any) and output (if any) are then displayed.  In
-pyscript, a trigger function runs asynchonously, so it can generate output some future time.  In
-Jupyter notebook and lab, the right thing happens - whenever the output messages are generated, they
+* Jupyter console generally assumes the kernel operates in a half-duplex manner - it sends a snippet
+of code to the kernel to be executed, and the result (if any) and output (if any) are then displayed.
+In pyscript, a trigger function runs asynchonously, so it can generate output at some future time.
+In Jupyter notebook and lab, the right thing happens - whenever the output messages are generated, they
 appear below the last cell that was executed. Jupyter notebook displays the running list of message
 output.  However, in Jupter console, it doesn't appear to check for any pending output from the kernel
 until you hit `Enter` to execute the next command.  So the display of output in the console is delayed
