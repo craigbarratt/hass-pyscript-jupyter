@@ -44,6 +44,9 @@ wget https://github.com/craigbarratt/hass-pyscript-jupyter/raw/master/logo-64x64
     - `HASS_URL` with the URL of your HASS httpd service
     - `HASS_TOKEN` with a long-lived access token created via the button at the bottom of
        your user profile page in HASS.
+    - Since you've added a HASS access token to this file, you should make sure you are
+      comfortable with file permissions - anyone who can read this file could use the
+      access token to use the HASS UI without being an authenticated user.
 * Confirm that Jupyter now recognizes the new pyscript kernel:
 ```
 jupyter kernelspec list
@@ -146,10 +149,10 @@ time so there is an empty line indicating your code block is complete.
 of code to the kernel to be executed, and the result (if any) and output (if any) are then displayed.
 In pyscript, a trigger function runs asynchonously, so it can generate output at some future time.
 In Jupyter notebook and lab, the right thing happens - whenever the output messages are generated, they
-appear below the last cell that was executed. Jupyter notebook displays the running list of message
-output.  However, in Jupter console, it doesn't appear to check for any pending output from the kernel
-until you hit `Enter` to execute the next command.  So the display of output in the console is delayed
-until you hit `Enter`.
+appear below the last cell that was executed. Jupyter notebook displays the running list of log output.
+However, in Jupter console, it doesn't check for any output from the kernel until you hit `Enter` to
+execute the next command. So the display of output in the console is delayed until you hit `Enter`.
+The HASS log file will show any log output in real time, subject to the logging level threshold.
 
 For Jupyter lab:
 * In Jupyter lab, each tab starts a new session (which is same behavior with iPython - each tab will
