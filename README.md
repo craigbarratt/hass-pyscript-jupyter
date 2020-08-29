@@ -41,6 +41,7 @@ wget https://github.com/craigbarratt/hass-pyscript-jupyter/raw/master/logo-64x64
     - check the `python` entry in `argv` to make sure it is the latest version of python
       on your system (eg, you might need to replace with `python3`)
 * Edit `hass_pyscript_kernel.py` and replace the settings of:
+    - `HASS_HOST` with the host name or IP address where your HASS instance is running
     - `HASS_URL` with the URL of your HASS httpd service
     - `HASS_TOKEN` with a long-lived access token created via the button at the bottom of
        your user profile page in HASS.
@@ -65,6 +66,9 @@ For the Jupyter command-line console, you can run:
 ```
 jupyter console --kernel=pyscript
 ```
+
+If Jupyter can't connect look at [this wiki page](https://github.com/craigbarratt/hass-pyscript-jupyter/wiki/Connection-problems)
+for suggestions.
 
 ## Tutorial
 
