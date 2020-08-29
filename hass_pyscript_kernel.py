@@ -11,7 +11,6 @@
 
 import argparse
 import asyncio
-from asyncio import current_task
 import json
 import requests
 import secrets
@@ -19,13 +18,15 @@ import sys
 import traceback
 
 #
-# Set HASS_HOST to the host name or IP address of your HASS instance
+# Set HASS_HOST to the host name or IP address where your HASS is running.
+# This should be a host name or IP address ou can ping from the Jupyter
+# client machine.
 #
 HASS_HOST = "YOUR_HASS_HOST_OR_IP"
 
 #
 # Set HASS_URL to the URL of your HASS http interface. Typically the host
-# name will be the same as HASS_HOST above
+# name portion will be the same as HASS_HOST above.
 #
 HASS_URL = "http://YOUR_HASS_HOST_OR_IP:8123"
 
@@ -88,7 +89,7 @@ class RelayPort:
                 my_exit_q = asyncio.Queue(0)
                 client_reader = reader
                 client_writer = writer
-                await status_q.put(["task_start", current_task()])
+                await status_q.put(["task_start", asyncio.current_task()])
 
                 kernel_reader, kernel_writer = await asyncio.open_connection(
                     self.kernel_host, self.kernel_port
@@ -123,7 +124,7 @@ class RelayPort:
                         pass
                 for sock in [client_writer, kernel_writer]:
                     sock.close()
-                for task in [current_task(), client2kernel_task, kernel2client_task]:
+                for task in [asyncio.current_task(), client2kernel_task, kernel2client_task]:
                     await status_q.put(["task_end", task])
                 if exit_status:
                     await status_q.put(["exit", exit_status])
@@ -201,6 +202,7 @@ async def kernel_run(config_filename, verbose):
     for port_name in port_names:
         del kernel_config[port_name]
     kernel_config["state_var"] = "pyscript.jupyter_ports_" + secrets.token_hex(5)
+    kernel_config["ip"] = self.kernel_host
 
     #
     # Call the pyscript/jupyter_kernel_start service to tell pyscript to start
