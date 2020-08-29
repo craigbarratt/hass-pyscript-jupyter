@@ -202,7 +202,7 @@ async def kernel_run(config_filename, verbose):
     for port_name in port_names:
         del kernel_config[port_name]
     kernel_config["state_var"] = "pyscript.jupyter_ports_" + secrets.token_hex(5)
-    kernel_config["ip"] = self.kernel_host
+    kernel_config["ip"] = HASS_HOST
 
     #
     # Call the pyscript/jupyter_kernel_start service to tell pyscript to start
