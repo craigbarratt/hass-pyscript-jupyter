@@ -11,6 +11,7 @@
 
 import argparse
 import asyncio
+from asyncio import current_task
 import json
 import requests
 import secrets
@@ -38,16 +39,6 @@ HASS_TOKEN = "REPLACE_WITH_THE_LONG_TERM_ACCESS_KEY_FROM_HASS"
 # Our program name we print when --verbose is used
 #
 SCRIPT_NAME = "hass_pyscript_kernel.py"
-
-
-def current_task():
-    """Return our asyncio current task."""
-    try:
-        # python >= 3.7
-        return asyncio.current_task()
-    except AttributeError:
-        # python <= 3.6
-        return asyncio.tasks.Task.current_task()
 
 
 def do_request(url, headers, data=None):
