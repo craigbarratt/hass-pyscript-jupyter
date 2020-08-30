@@ -143,6 +143,13 @@ The pyscript Jupyter kernel is an experimental feature and it will probably evol
 and capabilities (and no doubt there are bugs that will need to be fixed).  Here are some caveats
 about using it.
 
+For Jupyter notebook:
+* Jupyter notebook supports a wide range of extensions, call nbextensions. Some of these might not
+work correctly with pyscript's kernel. The black nbextension does work, but isort does not (although
+it should soon). If you are having problems with notebooks running on the pyscript kernel, try
+disabling nbextensions. Please report nbextentions that you think are useful but don't work with
+pyscript's kernel and we'll look at supporting them.
+
 For Jupyter console:
 * Jupyter console allows multi-line input (eg, a function definition) and delays excution by the
 kernel until it is syntactically correct (ie, complete) and the indent on the last line is 0.  So if
