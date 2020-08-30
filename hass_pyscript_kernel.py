@@ -19,14 +19,15 @@ import traceback
 
 #
 # Set HASS_HOST to the host name or IP address where your HASS is running.
-# This should be a host name or IP address ou can ping from the Jupyter
-# client machine.
+# This should be a host name or IP address you can ping from the Jupyter
+# client machine. e.g., "192.168.1.10" or "homeassistant".
 #
 HASS_HOST = "YOUR_HASS_HOST_OR_IP"
 
 #
 # Set HASS_URL to the URL of your HASS http interface. Typically the host
 # name portion will be the same as HASS_HOST above.
+# e.g., http://my-homeassistant.duckdns.org/ or "http://192.168.1.10:8123".
 #
 HASS_URL = "http://YOUR_HASS_HOST_OR_IP:8123"
 
