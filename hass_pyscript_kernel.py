@@ -102,12 +102,12 @@ class RelayPort:
 
                 client2kernel_task = asyncio.create_task(
                     self.forward_data_task(
-                        "c2k", client_reader, kernel_writer, my_exit_q
+                        "c2k", client_reader, kernel_writer, my_exit_q, 0
                     )
                 )
                 kernel2client_task = asyncio.create_task(
                     self.forward_data_task(
-                        "k2c", kernel_reader, client_writer, my_exit_q
+                        "k2c", kernel_reader, client_writer, my_exit_q, 1
                     )
                 )
                 for task in [client2kernel_task, kernel2client_task]:
@@ -115,7 +115,7 @@ class RelayPort:
 
                 exit_status = await my_exit_q.get()
                 if self.verbose >= 3:
-                    print(f"{SCRIPT_NAME}: {self.name} shutting down connections")
+                    print(f"{SCRIPT_NAME}: {self.name} shutting down connections (exit_status={exit_status})")
                 for task in [client2kernel_task, kernel2client_task]:
                     try:
                         task.cancel()
@@ -149,13 +149,13 @@ class RelayPort:
             self.client_server.close()
             self.client_server = None
 
-    async def forward_data_task(self, dir_str, reader, writer, exit_q):
+    async def forward_data_task(self, dir_str, reader, writer, exit_q, exit_status):
         """Forward data from one side to the other."""
         try:
             while True:
                 data = await reader.read(8192)
                 if len(data) == 0:
-                    await exit_q.put(0)
+                    await exit_q.put(exit_status)
                     return
                 if self.verbose >= 4:
                     print(
