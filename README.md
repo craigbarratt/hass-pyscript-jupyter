@@ -145,10 +145,10 @@ about using it.
 
 For Jupyter notebook:
 * Jupyter notebook supports a wide range of extensions, call nbextensions. Some of these might not
-work correctly with pyscript's kernel. The black nbextension does work, but isort does not (although
-it should soon). If you are having problems with notebooks running on the pyscript kernel, try
-disabling nbextensions. Please report nbextentions that you think are useful but don't work with
-pyscript's kernel and we'll look at supporting them.
+work correctly with pyscript's kernel. The black and isort nbextensions do work. If you are having
+problems with notebooks running on the pyscript kernel, try disabling other nbextensions. Please
+report nbextentions that you think are useful but don't work with pyscript's kernel and we'll
+look at supporting them.
 
 For Jupyter console:
 * Jupyter console allows multi-line input (eg, a function definition) and delays excution by the
