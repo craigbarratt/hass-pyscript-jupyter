@@ -14,27 +14,27 @@ then helps establish the various socket connections between HASS/pyscript and Ju
 
 Here are the steps to install the pyscript kernel for Jupyter:
 * Find the directory `KERNEL_DIRECTORY` where Jupyter kernels are stored:
-```
-jupyter kernelspec list
-```
+    ```
+    jupyter kernelspec list
+    ```
 * Create a new directory called `pyscript` alongside the other kernels:
-```
-cd KERNEL_DIRECTORY
-mkdir pyscript
-cd pyscript
-```
-* Download and extract the latest `hass-pyscript-jupyter-X.XX.zip` file from github releases
-in `KERNEL_DIRECTORY/pyscript`.  Alternatively, you can download the current master version
+    ```
+    cd KERNEL_DIRECTORY
+    mkdir pyscript
+    cd pyscript
+    ```
+* Download and extract the latest `hass-pyscript-jupyter-X.XX.zip` file from
+[releases](https://github.com/craigbarratt/hass-pyscript-jupyter/releases) into
+`KERNEL_DIRECTORY/pyscript`.  Alternatively, you can download the current master version
 of the files (`kernel.json`, `hass_pyscript_kernel.py` and the two logo files) in this directory.
-<details><summary>Click to see the direct download commands</summary>
-
-```
-wget https://github.com/craigbarratt/hass-pyscript-jupyter/raw/master/kernel.json
-wget https://github.com/craigbarratt/hass-pyscript-jupyter/raw/master/hass_pyscript_kernel.py
-wget https://github.com/craigbarratt/hass-pyscript-jupyter/raw/master/logo-32x32.png
-wget https://github.com/craigbarratt/hass-pyscript-jupyter/raw/master/logo-64x64.png
-```
-</details>
+    <details><summary>Click to see the direct download commands</summary>
+    ```
+    wget https://github.com/craigbarratt/hass-pyscript-jupyter/raw/master/kernel.json
+    wget https://github.com/craigbarratt/hass-pyscript-jupyter/raw/master/hass_pyscript_kernel.py
+    wget https://github.com/craigbarratt/hass-pyscript-jupyter/raw/master/logo-32x32.png
+    wget https://github.com/craigbarratt/hass-pyscript-jupyter/raw/master/logo-64x64.png
+    ```
+    </details>
 
 * Edit `kernel.json`:
     - replace KERNEL_DIRECTORY by the directory determined above.
@@ -49,9 +49,9 @@ wget https://github.com/craigbarratt/hass-pyscript-jupyter/raw/master/logo-64x64
       comfortable with file permissions - anyone who can read this file could use the
       access token to use the HASS UI without being an authenticated user.
 * Confirm that Jupyter now recognizes the new pyscript kernel:
-```
-jupyter kernelspec list
-```
+    ```
+    jupyter kernelspec list
+    ```
 Please tell me if you have feedback on how to automate or improve these steps.
 
 ## Running Jupyter
