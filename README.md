@@ -28,6 +28,7 @@ Here are the steps to install the pyscript kernel for Jupyter:
 `KERNEL_DIRECTORY/pyscript`.  Alternatively, you can download the current master version
 of the files (`kernel.json`, `hass_pyscript_kernel.py` and the two logo files) in this directory.
     <details><summary>Click to see the direct download commands</summary>
+
     ```
     wget https://github.com/craigbarratt/hass-pyscript-jupyter/raw/master/kernel.json
     wget https://github.com/craigbarratt/hass-pyscript-jupyter/raw/master/hass_pyscript_kernel.py
