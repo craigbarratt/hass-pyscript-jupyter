@@ -13,11 +13,12 @@ import argparse
 import asyncio
 import configparser
 import json
-import requests
 import secrets
 import sys
 import traceback
 from pathlib import Path
+
+import requests
 
 #
 # Our program name we print when --verbose is used
@@ -28,11 +29,11 @@ SCRIPT_NAME = this_file.name
 #
 # Read the Home Assistant connection settings from the config file
 #
-config = configparser.ConfigParser()
-config.read(this_file.parent / "pyscript.conf")
-HASS_HOST = config["homeassistant"]["hass_host"]
-HASS_URL = config["homeassistant"]["hass_url"]
-HASS_TOKEN = config["homeassistant"]["hass_token"]
+hass_config = configparser.ConfigParser()
+hass_config.read(this_file.parent / "pyscript.conf")
+HASS_HOST = hass_config["homeassistant"]["hass_host"]
+HASS_URL = hass_config["homeassistant"]["hass_url"]
+HASS_TOKEN = hass_config["homeassistant"]["hass_token"]
 
 
 def do_request(url, headers, data=None):
@@ -108,7 +109,9 @@ class RelayPort:
 
                 exit_status = await my_exit_q.get()
                 if self.verbose >= 3:
-                    print(f"{SCRIPT_NAME}: {self.name} shutting down connections (exit_status={exit_status})")
+                    print(
+                        f"{SCRIPT_NAME}: {self.name} shutting down connections (exit_status={exit_status})"
+                    )
                 for task in [client2kernel_task, kernel2client_task]:
                     try:
                         task.cancel()
@@ -117,7 +120,11 @@ class RelayPort:
                         pass
                 for sock in [client_writer, kernel_writer]:
                     sock.close()
-                for task in [asyncio.current_task(), client2kernel_task, kernel2client_task]:
+                for task in [
+                    asyncio.current_task(),
+                    client2kernel_task,
+                    kernel2client_task,
+                ]:
                     await status_q.put(["task_end", task])
                 if exit_status:
                     await status_q.put(["exit", exit_status])
@@ -307,4 +314,6 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    asyncio.run(kernel_run(args.config_file, args.verbose if args.verbose is not None else 0))
+    asyncio.run(
+        kernel_run(args.config_file, args.verbose if args.verbose is not None else 0)
+    )
