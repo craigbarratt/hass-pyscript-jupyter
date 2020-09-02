@@ -26,7 +26,7 @@ Here are the steps to install the pyscript kernel for Jupyter:
 * Download and extract the latest `hass-pyscript-jupyter-X.XX.zip` file from
 [releases](https://github.com/craigbarratt/hass-pyscript-jupyter/releases) into
 `KERNEL_DIRECTORY/pyscript`.  Alternatively, you can download the current master version
-of the files (`kernel.json`, `hass_pyscript_kernel.py` and the two logo files) in this directory.
+of the files (`kernel.json`, `hass_pyscript_kernel.py`, `pyscript.conf`, and the two logo files) in this directory.
     <details><summary>Click to see the direct download commands</summary>
 
     ```
@@ -34,6 +34,7 @@ of the files (`kernel.json`, `hass_pyscript_kernel.py` and the two logo files) i
     wget https://github.com/craigbarratt/hass-pyscript-jupyter/raw/master/hass_pyscript_kernel.py
     wget https://github.com/craigbarratt/hass-pyscript-jupyter/raw/master/logo-32x32.png
     wget https://github.com/craigbarratt/hass-pyscript-jupyter/raw/master/logo-64x64.png
+    wget https://github.com/craigbarratt/hass-pyscript-jupyter/raw/master/pyscript.conf
     ```
     </details>
 
@@ -41,10 +42,10 @@ of the files (`kernel.json`, `hass_pyscript_kernel.py` and the two logo files) i
     - replace KERNEL_DIRECTORY by the directory determined above.
     - check the `python` entry in `argv` to make sure it is the latest version of python
       on your system (eg, you might need to replace with `python3`)
-* Edit `hass_pyscript_kernel.py` and replace the settings of:
-    - `HASS_HOST` with the host name or IP address where your HASS instance is running
-    - `HASS_URL` with the URL of your HASS httpd service
-    - `HASS_TOKEN` with a long-lived access token created via the button at the bottom of
+* Edit `pyscript.conf` and replace the settings of:
+    - `hass_host` with the host name or IP address where your HASS instance is running
+    - `hass_url` with the URL of your HASS httpd service
+    - `hass_token` with a long-lived access token created via the button at the bottom of
        your user profile page in HASS.
     - Since you've added a HASS access token to this file, you should make sure you are
       comfortable with file permissions - anyone who can read this file could use the

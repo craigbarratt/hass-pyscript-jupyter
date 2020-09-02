@@ -11,36 +11,28 @@
 
 import argparse
 import asyncio
+import configparser
 import json
 import requests
 import secrets
 import sys
 import traceback
-
-#
-# Set HASS_HOST to the host name or IP address where your HASS is running.
-# This should be a host name or IP address you can ping from the Jupyter
-# client machine. e.g., "192.168.1.10" or "homeassistant".
-#
-HASS_HOST = "YOUR_HASS_HOST_OR_IP"
-
-#
-# Set HASS_URL to the URL of your HASS http interface. Typically the host
-# name portion will be the same as HASS_HOST above.
-# e.g., http://my-homeassistant.duckdns.org/ or "http://192.168.1.10:8123".
-#
-HASS_URL = "http://YOUR_HASS_HOST_OR_IP:8123"
-
-#
-# Set HASS_TOKEN to a long-term access token created via the button
-# at the bottom of your user profile page in HASS.
-#
-HASS_TOKEN = "REPLACE_WITH_THE_LONG_TERM_ACCESS_KEY_FROM_HASS"
+from pathlib import Path
 
 #
 # Our program name we print when --verbose is used
 #
-SCRIPT_NAME = "hass_pyscript_kernel.py"
+this_file = Path(__file__).resolve()
+SCRIPT_NAME = this_file.name
+
+#
+# Read the Home Assistant connection settings from the config file
+#
+config = configparser.ConfigParser()
+config.read(this_file.parent / "pyscript.conf")
+HASS_HOST = config["homeassistant"]["hass_host"]
+HASS_URL = config["homeassistant"]["hass_url"]
+HASS_TOKEN = config["homeassistant"]["hass_token"]
 
 
 def do_request(url, headers, data=None):
