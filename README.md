@@ -146,7 +146,7 @@ and capabilities (and no doubt there are bugs that will need to be fixed).  Here
 about using it.
 
 For Jupyter notebook:
-* Jupyter notebook supports a wide range of extensions, call nbextensions. Some of these might not
+* Jupyter notebook supports a wide range of extensions, called nbextensions. Some of these might not
 work correctly with pyscript's kernel. The black and isort nbextensions do work. If you are having
 problems with notebooks running on the pyscript kernel, try disabling other nbextensions. Please
 report nbextentions that you think are useful but don't work with pyscript's kernel and we'll
