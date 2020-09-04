@@ -74,7 +74,7 @@ for suggestions.
 
 ## Tutorial
 
-There is a Jupyter notebook [tutorial](https://github.com/craigbarratt/hass-pyscript-jupyter/blob/master/pyscript_tutorial.ipynb)
+There is a Jupyter notebook [tutorial](https://nbviewer.jupyter.org/github/craigbarratt/hass-pyscript-jupyter/blob/master/pyscript_tutorial.ipynb)
 that covers many pyscript features.  It can be downlaoded and run interactively in Jupyter
 notebook connected to your live HASS with pyscript.  You can download the `pyscript_tutorial.ipynb`
 notebook using:
@@ -185,7 +185,7 @@ applications you develop.
 * [Issues](https://github.com/craigbarratt/hass-pyscript-jupyter/issues)
 * [Wiki](https://github.com/craigbarratt/hass-pyscript-jupyter/wiki)
 * [GitHub repository](https://github.com/craigbarratt/hass-pyscript-jupyter) (please add a star if you like it!)
-* [Jupyter notebook tutorial](https://github.com/craigbarratt/hass-pyscript-jupyter/blob/master/pyscript_tutorial.ipynb)
+* [Jupyter notebook tutorial](https://nbviewer.jupyter.org/github/craigbarratt/hass-pyscript-jupyter/blob/master/pyscript_tutorial.ipynb)
 * [Pyscript](https://github.com/custom-components/pyscript)
 
 ## Copyright
