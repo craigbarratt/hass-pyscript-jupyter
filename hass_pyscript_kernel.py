@@ -16,11 +16,13 @@ import json
 import secrets
 import sys
 import traceback
+from asyncio.streams import StreamReader, StreamWriter
 from pathlib import Path
 from typing import Any
 
 import aiohttp
 import aiohttp_socks as proxy
+from aiohttp import ClientResponse
 from aiohttp.typedefs import StrOrURL
 
 #
@@ -39,7 +41,7 @@ CONFIG_DEFAULTS = {
 CONFIG_SETTINGS = {}
 
 
-def load_config():
+def load_config() -> None:
     """Read the Home Assistant connection settings from the config file"""
     global CONFIG_SETTINGS
 
@@ -66,7 +68,14 @@ def load_config():
 class RelayPort:
     """Define the RelayPort class, that does full-duplex forwarding between TCP endpoints."""
 
-    def __init__(self, name, kernel_port, client_host, client_port, verbose=0):
+    def __init__(
+        self,
+        name: str,
+        kernel_port: int,
+        client_host: str,
+        client_port: int,
+        verbose: int = 0,
+    ):
         """Initialize a relay port."""
         self.name = name
         self.client_host = client_host
@@ -82,10 +91,10 @@ class RelayPort:
         self.kernel_reader = None
         self.kernel_writer = None
 
-    async def client_server_start(self, status_q):
+    async def client_server_start(self, status_q: asyncio.Queue):
         """Start a server that listens for client connections."""
 
-        async def client_connected(reader, writer):
+        async def client_connected(reader: StreamReader, writer: StreamWriter) -> None:
             try:
                 if self.verbose >= 3:
                     print(
@@ -156,13 +165,20 @@ class RelayPort:
             client_connected, self.client_host, self.client_port
         )
 
-    async def client_server_stop(self):
+    async def client_server_stop(self) -> None:
         """Stop the server waiting for client connections."""
         if self.client_server:
             self.client_server.close()
             self.client_server = None
 
-    async def forward_data_task(self, dir_str, reader, writer, exit_q, exit_status):
+    async def forward_data_task(
+        self,
+        dir_str: str,
+        reader: StreamReader,
+        writer: StreamWriter,
+        exit_q: asyncio.Queue,
+        exit_status: int,
+    ):
         """Forward data from one side to the other."""
         try:
             while True:
@@ -191,7 +207,7 @@ class RelayPort:
 # exit since Jupyter thinks the kernel has stopped.  We sit in the
 # middle of the heartbeat loop so we know when the kernel is stopped.
 #
-async def kernel_run(config_filename, verbose):
+async def kernel_run(config_filename: str, verbose: int) -> None:
     """Start a new pyscript kernel."""
     port_names = ["hb_port", "stdin_port", "shell_port", "iopub_port", "control_port"]
     hass_host = CONFIG_SETTINGS["hass_host"]
@@ -207,8 +223,8 @@ async def kernel_run(config_filename, verbose):
     )
 
     async def do_request(
-            url: StrOrURL, data: Any = None, json: Any = None, **kwargs: Any
-    ):
+        url: StrOrURL, data: Any = None, json: Any = None, **kwargs: Any
+    ) -> ClientResponse:
         """Do a GET or POST with the given URL."""
         try:
             method = "POST" if data or json else "GET"
@@ -346,7 +362,7 @@ async def kernel_run(config_filename, verbose):
     sys.exit(exit_status)
 
 
-def main():
+def main() -> None:
     global CONFIG_SETTINGS
 
     parser = argparse.ArgumentParser()
