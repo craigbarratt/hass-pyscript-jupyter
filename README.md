@@ -26,18 +26,23 @@ Here are the steps to install the pyscript kernel for Jupyter:
 * Download and extract the latest `hass-pyscript-jupyter-X.XX.zip` file from
 [releases](https://github.com/craigbarratt/hass-pyscript-jupyter/releases) into
 `KERNEL_DIRECTORY/pyscript`.  Alternatively, you can download the current master version
-of the files (`kernel.json`, `hass_pyscript_kernel.py`, `pyscript.conf`, and the two logo files) in this directory.
+of the files (`kernel.json`, `hass_pyscript_kernel.py`, `pyscript.conf`, `requirements.txt` and the two logo files) in this directory.
     <details><summary>Click to see the direct download commands</summary>
 
     ```
     wget https://github.com/craigbarratt/hass-pyscript-jupyter/raw/master/kernel.json
     wget https://github.com/craigbarratt/hass-pyscript-jupyter/raw/master/hass_pyscript_kernel.py
+    wget https://github.com/craigbarratt/hass-pyscript-jupyter/raw/master/requirements.txt
     wget https://github.com/craigbarratt/hass-pyscript-jupyter/raw/master/logo-32x32.png
     wget https://github.com/craigbarratt/hass-pyscript-jupyter/raw/master/logo-64x64.png
     wget https://github.com/craigbarratt/hass-pyscript-jupyter/raw/master/pyscript.conf
     ```
     </details>
 
+* Install dependencies:
+    ```
+    pip install -r requirements.txt
+    ```
 * Edit `kernel.json`:
     - replace KERNEL_DIRECTORY by the directory determined above.
     - check the `python` entry in `argv` to make sure it is the latest version of python
@@ -50,6 +55,9 @@ of the files (`kernel.json`, `hass_pyscript_kernel.py`, `pyscript.conf`, and the
     - Since you've added a HASS access token to this file, you should make sure you are
       comfortable with file permissions - anyone who can read this file could use the
       access token to use the HASS UI without being an authenticated user.
+    - `hass_proxy` with proxy url to use if HASS is not directly reachable.
+      e.g. when using SSH to access your HASS instance, you can open a SOCKS5 tunnel to
+      keep your Jupyter local. 
 * Confirm that Jupyter now recognizes the new pyscript kernel:
     ```
     jupyter kernelspec list
