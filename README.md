@@ -12,57 +12,34 @@ then helps establish the various socket connections between HASS/pyscript and Ju
 
 ## Installation
 
-Here are the steps to install the pyscript kernel for Jupyter:
-* Find the directory `KERNEL_DIRECTORY` where Jupyter kernels are stored:
-    ```
-    jupyter kernelspec list
-    ```
-* Create a new directory called `pyscript` alongside the other kernels:
-    ```
-    cd KERNEL_DIRECTORY
-    mkdir pyscript
-    cd pyscript
-    ```
-* Download and extract the latest `hass-pyscript-jupyter-X.XX.zip` file from
-[releases](https://github.com/craigbarratt/hass-pyscript-jupyter/releases) into
-`KERNEL_DIRECTORY/pyscript`.  Alternatively, you can download the current master version
-of the files (`kernel.json`, `hass_pyscript_kernel.py`, `pyscript.conf`, `requirements.txt` and the two logo files) in this directory.
-    <details><summary>Click to see the direct download commands</summary>
+To install the pyscript Jupyter kernel:
+```
+pip install hass_pyscript_kernel
+jupyter pyscript install
+```
 
-    ```
-    wget https://github.com/craigbarratt/hass-pyscript-jupyter/raw/master/kernel.json
-    wget https://github.com/craigbarratt/hass-pyscript-jupyter/raw/master/hass_pyscript_kernel.py
-    wget https://github.com/craigbarratt/hass-pyscript-jupyter/raw/master/requirements.txt
-    wget https://github.com/craigbarratt/hass-pyscript-jupyter/raw/master/logo-32x32.png
-    wget https://github.com/craigbarratt/hass-pyscript-jupyter/raw/master/logo-64x64.png
-    wget https://github.com/craigbarratt/hass-pyscript-jupyter/raw/master/pyscript.conf
-    ```
-    </details>
+On a new install, you'll need to edit the `pyscript.conf` file. The install command above
+will print its path. Replace these settings:
 
-* Install dependencies:
-    ```
-    pip install -r requirements.txt
-    ```
-* Edit `kernel.json`:
-    - replace KERNEL_DIRECTORY by the directory determined above.
-    - check the `python` entry in `argv` to make sure it is the latest version of python
-      on your system (eg, you might need to replace with `python3`)
-* Edit `pyscript.conf` and replace the settings of:
-    - `hass_host` with the host name or IP address where your HASS instance is running
-    - `hass_url` with the URL of your HASS httpd service
-    - `hass_token` with a long-lived access token created via the button at the bottom of
-       your user profile page in HASS.
-    - Since you've added a HASS access token to this file, you should make sure you are
-      comfortable with file permissions - anyone who can read this file could use the
-      access token to use the HASS UI without being an authenticated user.
-    - `hass_proxy` with proxy url to use if HASS is not directly reachable.
-      e.g. when using SSH to access your HASS instance, you can open a SOCKS5 tunnel to
-      keep your Jupyter local. 
-* Confirm that Jupyter now recognizes the new pyscript kernel:
-    ```
-    jupyter kernelspec list
-    ```
-Please tell me if you have feedback on how to automate or improve these steps.
+- `hass_host` with the host name or IP address where your HASS instance is running
+- `hass_url` with the URL of your HASS httpd service
+- `hass_token` with a long-lived access token created via the button at the bottom of
+   your user profile page in HASS.
+- Since you've added a HASS access token to this file, you should make sure you are
+  comfortable with file permissions - anyone who can read this file could use the
+  access token to use the HASS UI without being an authenticated user.
+- `hass_proxy` with proxy url to use if HASS is not directly reachable.
+  e.g. when using SSH to access your HASS instance, you can open a SOCKS5 tunnel to
+  keep your Jupyter local. 
+
+Confirm that Jupyter now recognizes the new pyscript kernel:
+```
+jupyter kernelspec list
+```
+and you can confirm the settings you added above with:
+```
+jupyter pyscript info
+```
 
 ## Running Jupyter
 
@@ -114,30 +91,9 @@ have other function and trigger definitions in another cell - they won't be affe
 those function names are different), and they will only be replaced when you re-execute that
 other cell.
 
-When the Jupyter session is terminated, its global context is deleted, which means any trigger
-rules, functions, services and variables you created are deleted.  The pyscript Jupyter kernel
-is intended as an interactive sandbox. As you finalize specific functions, triggers and automation
-logic, you should copy them to a pyscript script file, and then use the `pyscript.reload` service
-to load them. That ensures they will be loaded and run each time you re-start HASS.
+See [more documentation](https://hacs-pyscript.readthedocs.io/en/stable/reference.html#workflow).
 
-If a function you define has been triggered and is currently executing Python code, then re-running
-the cell in which the function is defined, or exiting the Jupyter session, will not stop or cancel
-the already running function. This is the same behavior as `reload`. In pyscript, each triggered
-function (ie, a trigger has occurred, the trigger conditions are met, and the function is actually
-executing Python code) runs as an independent task until it finishes. So if you are testing triggers
-of a long-running function (eg, one that uses `task.sleep()` or `task.wait_until()`) you could end up
-with many running instances. It's strongly recommended that you use `task.unique()` to make sure old
-running function tasks are terminated when a new one is triggered. Then you can manually call
-`task.unique()` to terminate that last running function before exiting the Jupyter session.
-
-If you switch global contexts to a script file's context, and create some new variables,
-triggers, functions or services there, then those objects will survive the termination
-of your Jupyter session.  However, if you `reload` the scripts, then those newly-created
-objects will be removed.  To make any additions or changes permanent (meaning they will
-be re-created on each `reload` or each time your restart HASS) then you shoud copy the
-changes or additions to one of your pyscript script files.
-
-## Global Contexts
+## Global Context
 
 Each Jupyter session has its own separate global context, so functions and variables defined in each
 interactive session are isolated from the script files and other Jupyter sessions.  Pyscript
@@ -145,7 +101,7 @@ provides some utility functions to switch global contexts, which allows an inter
 session to interact directly with functions and global variables created by a script file, or even
 another Jupyter session.
 
-See the [documentation on global contexts](https://github.com/custom-components/pyscript#global-context-functions).
+See the [documentation on global contexts](https://hacs-pyscript.readthedocs.io/en/stable/reference.html#global-context).
 
 ## Caveats
 
@@ -187,9 +143,18 @@ Contributions are welcome! You are encouraged to submit PRs, bug reports, featur
 add to the Wiki with examples and tutorials. It would be fun to hear about unique and clever
 applications you develop.
 
+## Developing and installing locally
+
+From a clone of this repository run:
+```
+python -m pip install -r requirements.txt
+python setup.py bdist_wheel
+pip install dist/hass_pyscript_kernel-0.30-py3-none-any.whl
+```
+
 ## Useful Links
 
-* [Documentation](https://github.com/craigbarratt/hass-pyscript-jupyter/blob/master/README.md)
+* [Pyscript Documentation](https://hacs-pyscript.readthedocs.io/en/stable/index.html)
 * [Issues](https://github.com/craigbarratt/hass-pyscript-jupyter/issues)
 * [Wiki](https://github.com/craigbarratt/hass-pyscript-jupyter/wiki)
 * [GitHub repository](https://github.com/craigbarratt/hass-pyscript-jupyter) (please add a star if you like it!)

@@ -1,0 +1,9 @@
+__pycache__
+dist
+build
+hass_pyscript_kernel.egg-info
+venv
+.ipynb_checkpoints
+.coverage
+.vscode
+.*.swp

@@ -11,25 +11,25 @@
 
 import argparse
 import asyncio
+from asyncio.streams import StreamReader, StreamWriter
 import configparser
 import json
+from pathlib import Path
 import secrets
 import sys
 import traceback
-from asyncio.streams import StreamReader, StreamWriter
-from pathlib import Path
 from typing import Any
 
 import aiohttp
-import aiohttp_socks as proxy
 from aiohttp import ClientResponse
 from aiohttp.typedefs import StrOrURL
+import aiohttp_socks as proxy
+from jupyter_client.kernelspec import KernelSpecManager
 
 #
 # Our program name we print when --verbose is used
 #
-this_file = Path(__file__).resolve()
-SCRIPT_NAME = this_file.name
+PKG_NAME = "hass_pyscript_kernel"
 
 CONFIG_NAME = "pyscript.conf"
 CONFIG_DEFAULTS = {
@@ -41,9 +41,17 @@ CONFIG_DEFAULTS = {
 CONFIG_SETTINGS = {}
 
 
-def load_config() -> None:
+def load_config(kernel_name) -> None:
     """Read the Home Assistant connection settings from the config file"""
-    global CONFIG_SETTINGS
+    kernels = KernelSpecManager().find_kernel_specs()
+
+    if kernel_name not in kernels:
+        print(
+            f"{PKG_NAME}: can't find kernel {kernel_name} in list of available kernels ({sorted(kernels.keys())})"
+        )
+        sys.exit(1)
+
+    config_path = Path(kernels[kernel_name], CONFIG_NAME)
 
     parser_conf = configparser.ConfigParser(
         defaults=CONFIG_DEFAULTS,
@@ -53,28 +61,24 @@ def load_config() -> None:
     )
 
     try:
-        parser_conf.read_file(Path(this_file.parent, CONFIG_NAME).open())
+        parser_conf.read_file(config_path.open())
         hass_conf = parser_conf["homeassistant"]
     except KeyError:
-        print(f"{SCRIPT_NAME}: missing section 'homeassistant' in config file")
+        print(f"{PKG_NAME}: missing section 'homeassistant' in config file")
         sys.exit(1)
     except Exception as err:
-        print(f"{SCRIPT_NAME}: unable to load config file ({err})")
+        print(f"{PKG_NAME}: unable to load config file {config_path}, err={err}")
         sys.exit(1)
 
-    CONFIG_SETTINGS = {opt: hass_conf.getunquoted(opt) for opt in CONFIG_DEFAULTS}
+    for opt in CONFIG_DEFAULTS:
+        CONFIG_SETTINGS[opt] = hass_conf.getunquoted(opt)
 
 
 class RelayPort:
     """Define the RelayPort class, that does full-duplex forwarding between TCP endpoints."""
 
     def __init__(
-        self,
-        name: str,
-        kernel_port: int,
-        client_host: str,
-        client_port: int,
-        verbose: int = 0,
+        self, name: str, kernel_port: int, client_host: str, client_port: int, verbose: int = 0,
     ):
         """Initialize a relay port."""
         self.name = name
@@ -104,7 +108,7 @@ class RelayPort:
                 if CONFIG_SETTINGS["hass_proxy"] is not None:
                     if self.verbose >= 3:
                         print(
-                            f"{SCRIPT_NAME}: {self.name} connected to jupyter client; now trying pyscript kernel"
+                            f"{PKG_NAME}: {self.name} connected to jupyter client; now trying pyscript kernel"
                             f" via proxy {CONFIG_SETTINGS['hass_proxy']} at {self.kernel_host}:{self.kernel_port}"
                         )
                     kernel_reader, kernel_writer = await proxy.open_connection(
@@ -115,7 +119,7 @@ class RelayPort:
                 else:
                     if self.verbose >= 3:
                         print(
-                            f"{SCRIPT_NAME}: {self.name} connected to jupyter client; now trying pyscript kernel"
+                            f"{PKG_NAME}: {self.name} connected to jupyter client; now trying pyscript kernel"
                             f" at {self.kernel_host}:{self.kernel_port}"
                         )
                     kernel_reader, kernel_writer = await asyncio.open_connection(
@@ -124,27 +128,21 @@ class RelayPort:
 
                 if self.verbose >= 3:
                     print(
-                        f"{SCRIPT_NAME}: {self.name} pyscript kernel connected at {self.kernel_host}:{self.kernel_port}"
+                        f"{PKG_NAME}: {self.name} pyscript kernel connected at {self.kernel_host}:{self.kernel_port}"
                     )
 
                 client2kernel_task = asyncio.create_task(
-                    self.forward_data_task(
-                        "c2k", client_reader, kernel_writer, my_exit_q, 0
-                    )
+                    self.forward_data_task("c2k", client_reader, kernel_writer, my_exit_q, 0)
                 )
                 kernel2client_task = asyncio.create_task(
-                    self.forward_data_task(
-                        "k2c", kernel_reader, client_writer, my_exit_q, 1
-                    )
+                    self.forward_data_task("k2c", kernel_reader, client_writer, my_exit_q, 1)
                 )
                 for task in [client2kernel_task, kernel2client_task]:
                     await status_q.put(["task_start", task])
 
                 exit_status = await my_exit_q.get()
                 if self.verbose >= 3:
-                    print(
-                        f"{SCRIPT_NAME}: {self.name} shutting down connections (exit_status={exit_status})"
-                    )
+                    print(f"{PKG_NAME}: {self.name} shutting down connections (exit_status={exit_status})")
                 for task in [client2kernel_task, kernel2client_task]:
                     try:
                         task.cancel()
@@ -165,16 +163,14 @@ class RelayPort:
                 raise
             except Exception as err:  # pylint: disable=broad-except
                 print(
-                    f"{SCRIPT_NAME}: {self.name} client_connected got exception {err}; {traceback.format_exc(-1)}"
+                    f"{PKG_NAME}: {self.name} client_connected got exception {err}; {traceback.format_exc(-1)}"
                 )
 
         if self.verbose >= 3:
             print(
-                f"{SCRIPT_NAME}: {self.name} listening for jupyter client at {self.client_host}:{self.client_port}"
+                f"{PKG_NAME}: {self.name} listening for jupyter client at {self.client_host}:{self.client_port}"
             )
-        self.client_server = await asyncio.start_server(
-            client_connected, self.client_host, self.client_port
-        )
+        self.client_server = await asyncio.start_server(client_connected, self.client_host, self.client_port)
 
     async def client_server_stop(self) -> None:
         """Stop the server waiting for client connections."""
@@ -198,17 +194,13 @@ class RelayPort:
                     await exit_q.put(exit_status)
                     return
                 if self.verbose >= 4:
-                    print(
-                        f"{SCRIPT_NAME}: {self.name} {dir_str}: {data} ## {data.hex()}"
-                    )
+                    print(f"{PKG_NAME}: {self.name} {dir_str}: {data} ## {data.hex()}")
                 writer.write(data)
                 await writer.drain()
         except asyncio.CancelledError:  # pylint: disable=try-except-raise
             raise
         except Exception as err:  # pylint: disable=broad-except
-            print(
-                f"{SCRIPT_NAME}: {self.name} {dir_str} got exception {err}; {traceback.format_exc(-1)}"
-            )
+            print(f"{PKG_NAME}: {self.name} {dir_str} got exception {err}; {traceback.format_exc(-1)}")
             await exit_q.put(1)
             return
 
@@ -229,9 +221,7 @@ async def kernel_run(config_filename: str, verbose: int) -> None:
     headers = {
         "Authorization": f'Bearer {CONFIG_SETTINGS["hass_token"]}',
     }
-    session = aiohttp.ClientSession(
-        connector=connector, headers=headers, raise_for_status=True
-    )
+    session = aiohttp.ClientSession(connector=connector, headers=headers, raise_for_status=True)
 
     async def do_request(
         url: StrOrURL, data: Any = None, json_data: Any = None, **kwargs: Any
@@ -239,28 +229,24 @@ async def kernel_run(config_filename: str, verbose: int) -> None:
         """Do a GET or POST with the given URL."""
         try:
             method = "POST" if data or json_data else "GET"
-            return await session.request(
-                method=method, url=url, data=data, json=json_data, **kwargs
-            )
+            return await session.request(method=method, url=url, data=data, json=json_data, **kwargs)
         except aiohttp.ClientConnectorError as err:
-            print(
-                f"{SCRIPT_NAME}: unable to connect to host {err.host}:{err.port} ({err.strerror})"
-            )
+            print(f"{PKG_NAME}: unable to connect to host {err.host}:{err.port} ({err.strerror})")
             sys.exit(1)
         except aiohttp.ClientResponseError as err:
             print(
-                f"{SCRIPT_NAME}: request failed with {err.status}: {err.message} (url={err.request_info.url})"
+                f"{PKG_NAME}: request failed with {err.status}: {err.message} (url={err.request_info.url})"
             )
             sys.exit(1)
         except Exception as err:
-            print(f"{SCRIPT_NAME}: got error {err} (url={url})")
+            print(f"{PKG_NAME}: got error {err} (url={url})")
             sys.exit(1)
 
     with open(config_filename, "r") as fdesc:
         config = json.load(fdesc)
 
     if verbose >= 1:
-        print(f"{SCRIPT_NAME}: got jupyter client config={config}")
+        print(f"{PKG_NAME}: got jupyter client config={config}")
 
     #
     # The kernel generates its own port numbers since it might be on another host,
@@ -279,10 +265,10 @@ async def kernel_run(config_filename: str, verbose: int) -> None:
     #
     url = hass_url + "/api/services/pyscript/jupyter_kernel_start"
     if verbose >= 2:
-        print(f"{SCRIPT_NAME}: about to do service call post {url}")
+        print(f"{PKG_NAME}: about to do service call post {url}")
     result = await do_request(url, json_data=kernel_config)
     if verbose >= 1:
-        print(f"{SCRIPT_NAME}: service call put {url} returned {result.status}")
+        print(f"{PKG_NAME}: service call put {url} returned {result.status}")
 
     #
     # When pyscript starts a Jupyter session it will start servers to listen for
@@ -295,25 +281,19 @@ async def kernel_run(config_filename: str, verbose: int) -> None:
     while True:
         url = hass_url + "/api/states/" + kernel_config["state_var"]
         if verbose >= 2:
-            print(f"{SCRIPT_NAME}: about to do state get {url}")
+            print(f"{PKG_NAME}: about to do state get {url}")
         result = await do_request(url)
         if result.status == 200:
             result_json = await result.json()
             if "state" in result_json:
                 port_nums = json.loads(result_json["state"])
                 if verbose >= 1:
-                    print(
-                        f"{SCRIPT_NAME}: state variable get {url} returned {port_nums}"
-                    )
+                    print(f"{PKG_NAME}: state variable get {url} returned {port_nums}")
                 break
             if verbose >= 2:
-                print(
-                    f"{SCRIPT_NAME}: state get {url} got result.text={result.text}; retrying"
-                )
+                print(f"{PKG_NAME}: state get {url} got result.text={result.text}; retrying")
         elif verbose >= 2:
-            print(
-                f"{SCRIPT_NAME}: state get {url} got result.status {result.status}; retrying"
-            )
+            print(f"{PKG_NAME}: state get {url} got result.status {result.status}; retrying")
         await asyncio.sleep(0.5)
 
     # not needed any further
@@ -328,11 +308,7 @@ async def kernel_run(config_filename: str, verbose: int) -> None:
     relay_ports = {}
     for port_name in port_names:
         relay_ports[port_name] = RelayPort(
-            port_name,
-            port_nums[port_name],
-            config["ip"],
-            config[port_name],
-            verbose=verbose,
+            port_name, port_nums[port_name], config["ip"], config[port_name], verbose=verbose,
         )
         await relay_ports[port_name].client_server_start(status_q)
 
@@ -375,22 +351,16 @@ async def kernel_run(config_filename: str, verbose: int) -> None:
 
 def main() -> None:
     """Main function: start a new pyscript kernel."""
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(prog=PKG_NAME)
+    parser.add_argument("config_file", type=str, help="json kernel config file generated by Jupyter")
     parser.add_argument(
-        "config_file", type=str, help="json kernel config file generated by Jupyter"
+        "-v", "--verbose", action="count", help="increase output verbosity (repeat up to 4x)",
     )
     parser.add_argument(
-        "-v",
-        "--verbose",
-        action="count",
-        help="increase output verbosity (repeat up to 4x)",
+        "-k", "--kernel-name", type=str, help="kernel name", default="pyscript", dest="kernel_name"
     )
     args = parser.parse_args()
 
-    load_config()
+    load_config(args.kernel_name)
 
     asyncio.run(kernel_run(args.config_file, args.verbose if args.verbose else 0))
-
-
-if __name__ == "__main__":
-    main()
