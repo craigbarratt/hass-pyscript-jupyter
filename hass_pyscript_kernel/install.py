@@ -44,7 +44,7 @@ def install(target_dir, kernel_name):
     argv = ["python", "-m", PKG_NAME]
     if kernel_name != "pyscript":
         argv += ["-k", kernel_name]
-    argv.append("{connection_file}")
+    argv += ["-f", "{connection_file}"]
     kernel_spec = {
         "argv": argv,
         "display_name": f"hass {kernel_name}",
