@@ -1,14 +1,15 @@
 # HASS Pyscript kernel shim for Jupyter
 
-[Pyscript](https://github.com/custom-components/pyscript) provides a kernel that interfaces with the Jupyter
-front-ends (eg, notebook, console and lab). That allows you to develop and test pyscript triggers, functions
-and automation logic interactively. Plus you can interact with much of HASS by looking at state variables
-and calling services as you experiment and develop your own logic and automations.
+[Pyscript](https://github.com/custom-components/pyscript) provides a kernel that interfaces with the
+Jupyter front-ends (eg, notebook, console, lab, and also VSCode). That allows you to develop and
+test pyscript triggers, functions and automation logic interactively. Plus you can interact with
+much of HASS by looking at state variables and calling services as you experiment and develop your
+own logic and automations.
 
-This repository provides a shim that sits between HASS pyscript and Jupyter. When Jupyter starts
-a kernel, it is configured to run the script `hass_pyscript_kernel.py` in this repository. This
-script uses the HASS web interface to do a service call to pyscript that starts the kernel. It
-then helps establish the various socket connections between HASS/pyscript and Jupyter.
+This repository provides a shim that sits between HASS pyscript and Jupyter. When Jupyter starts a
+kernel, it is configured to run the script `hass_pyscript_kernel.py` in this repository. This script
+uses the HASS web interface to do a service call to pyscript that starts the kernel. It then helps
+establish the various socket connections between HASS/pyscript and Jupyter.
 
 ## Installation
 
@@ -107,9 +108,7 @@ See the [documentation on global contexts](https://hacs-pyscript.readthedocs.io/
 
 ## Caveats
 
-The pyscript Jupyter kernel is an experimental feature and it will probably evolve with new features
-and capabilities (and no doubt there are bugs that will need to be fixed).  Here are some caveats
-about using it.
+Here are some caveats about using specific clients with the pyscript Jupyter kernel:
 
 For Jupyter notebook:
 * Jupyter notebook supports a wide range of extensions, called nbextensions. Some of these might not
@@ -139,6 +138,15 @@ have a different iPython instance), so each tab (eg, a notebook in one and a con
 will have different global contexts. If you wish, you can use the function `pyscript.set_global_ctx()`
 to set the context in the other tabs to be the same as the first.
 
+For VSCode:
+* Like Jupyter console, `log` and `print` output from trigger functions won't be displayed by VSCode
+since their output is generated after the current code cell execution is complete.  You'll need to
+look at the HASS log file for log output from your trigger functions.
+* Some unresolved bug causes VSCode to start two pyscript Jupyter kernels, and the second one is
+typically shutdown soon after it starts. This seems to be benign - it should be invisible to the
+user, although the global context names (eg, jupyter_0) will increment by 2 on each new session,
+rather than 1.
+
 ## Contributing
 
 Contributions are welcome! You are encouraged to submit PRs, bug reports, feature requests or
@@ -151,8 +159,9 @@ From a clone of this repository run:
 ```
 python -m pip install -r requirements.txt
 python setup.py bdist_wheel
-pip install dist/hass_pyscript_kernel-0.30-py3-none-any.whl
+pip install dist/hass_pyscript_kernel-VERSION-py3-none-any.whl
 ```
+where `VERSION` is version specified in `hass_pyscript_kernel/version.py`.
 
 ## Useful Links
 
