@@ -9,6 +9,7 @@ from jupyter_client.kernelspec import KernelSpecManager
 from jupyter_core.paths import SYSTEM_JUPYTER_PATH
 
 from .shim import CONFIG_SETTINGS, PKG_NAME, load_config
+from .version import __version__
 
 SCRIPT_NAME = "jupyter-pyscript"
 
@@ -86,6 +87,7 @@ def install_main():
 
     elif args.action == "info":
         kernels = KernelSpecManager().find_kernel_specs()
+        print(f"{PKG_NAME} version {__version__} installed")
         if args.kernel_name not in kernels:
             print(f"No installed kernel named {args.kernel_name} found")
         else:

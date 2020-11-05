@@ -17,6 +17,8 @@ To install the pyscript Jupyter kernel:
 pip install hass_pyscript_kernel
 jupyter pyscript install
 ```
+Running `jupyter pyscript install` is only required on new installs, or if your old
+version of `hass_pyscript_kernel` is prior to 1.0.0.
 
 On a new install, you'll need to edit the `pyscript.conf` file. The install command above
 will print its path. Replace these settings:

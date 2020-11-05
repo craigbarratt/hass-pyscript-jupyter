@@ -348,7 +348,7 @@ async def kernel_run(config: dict, verbose: int) -> None:
 
 def remove_quotes(string):
     """Strip leading/trailing quotes from string, which VSCode strangely adds to arguments."""
-    if string[0] == string[-1] and string[0] in ('"', "'"):
+    if len(string) > 0 and string[0] == string[-1] and string[0] in ('"', "'"):
         return string[1:-1]
     if len(string) > 1 and string[0] == "b" and string[1] == string[-1] and string[1] in ('"', "'"):
         return string[2:-1]
