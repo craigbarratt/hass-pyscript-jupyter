@@ -166,6 +166,7 @@ where `VERSION` is version specified in `hass_pyscript_kernel/version.py`.
 ## Useful Links
 
 * [Pyscript Documentation](https://hacs-pyscript.readthedocs.io/en/stable/index.html)
+* [PyPi Project Page](https://pypi.org/project/hass-pyscript-kernel)
 * [Issues](https://github.com/craigbarratt/hass-pyscript-jupyter/issues)
 * [Wiki](https://github.com/craigbarratt/hass-pyscript-jupyter/wiki)
 * [GitHub repository](https://github.com/craigbarratt/hass-pyscript-jupyter) (please add a star if you like it!)
