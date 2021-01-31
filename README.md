@@ -13,7 +13,8 @@ establish the various socket connections between HASS/pyscript and Jupyter.
 
 ## Installation
 
-To install the pyscript Jupyter kernel:
+The pyscript Jupyter kernel should be installed on the client machine that is running Jupyter
+notebook and the browser (not on the HASS target). To install the pyscript Jupyter kernel:
 ```
 pip install hass_pyscript_kernel
 jupyter pyscript install
