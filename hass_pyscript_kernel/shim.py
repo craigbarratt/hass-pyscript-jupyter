@@ -47,7 +47,9 @@ def load_config(kernel_name) -> None:
     kernels = KernelSpecManager().find_kernel_specs()
 
     if kernel_name not in kernels:
-        print(f"{PKG_NAME}: can't find kernel {kernel_name} in list of available kernels ({sorted(kernels.keys())})")
+        print(
+            f"{PKG_NAME}: can't find kernel {kernel_name} in list of available kernels ({sorted(kernels.keys())})"
+        )
         sys.exit(1)
 
     config_path = Path(kernels[kernel_name], CONFIG_NAME)
@@ -111,8 +113,10 @@ class RelayPort:
 
                 if CONFIG_SETTINGS["hass_proxy"] is not None:
                     if self.verbose >= 3:
-                        print(f"{PKG_NAME}: {self.name} connected to jupyter client; now trying pyscript kernel"
-                              f" via proxy {CONFIG_SETTINGS['hass_proxy']} at {self.kernel_host}:{self.kernel_port}")
+                        print(
+                            f"{PKG_NAME}: {self.name} connected to jupyter client; now trying pyscript kernel"
+                            f" via proxy {CONFIG_SETTINGS['hass_proxy']} at {self.kernel_host}:{self.kernel_port}"
+                        )
                     kernel_reader, kernel_writer = await proxy.open_connection(
                         proxy_url=CONFIG_SETTINGS["hass_proxy"],
                         host=self.kernel_host,
@@ -120,17 +124,25 @@ class RelayPort:
                     )
                 else:
                     if self.verbose >= 3:
-                        print(f"{PKG_NAME}: {self.name} connected to jupyter client; now trying pyscript kernel"
-                              f" at {self.kernel_host}:{self.kernel_port}")
-                    kernel_reader, kernel_writer = await asyncio.open_connection(self.kernel_host, self.kernel_port)
+                        print(
+                            f"{PKG_NAME}: {self.name} connected to jupyter client; now trying pyscript kernel"
+                            f" at {self.kernel_host}:{self.kernel_port}"
+                        )
+                    kernel_reader, kernel_writer = await asyncio.open_connection(
+                        self.kernel_host, self.kernel_port
+                    )
 
                 if self.verbose >= 3:
-                    print(f"{PKG_NAME}: {self.name} pyscript kernel connected at {self.kernel_host}:{self.kernel_port}")
+                    print(
+                        f"{PKG_NAME}: {self.name} pyscript kernel connected at {self.kernel_host}:{self.kernel_port}"
+                    )
 
                 client2kernel_task = asyncio.create_task(
-                    self.forward_data_task("c2k", client_reader, kernel_writer, my_exit_q, 0))
+                    self.forward_data_task("c2k", client_reader, kernel_writer, my_exit_q, 0)
+                )
                 kernel2client_task = asyncio.create_task(
-                    self.forward_data_task("k2c", kernel_reader, client_writer, my_exit_q, 1))
+                    self.forward_data_task("k2c", kernel_reader, client_writer, my_exit_q, 1)
+                )
                 for task in [client2kernel_task, kernel2client_task]:
                     await status_q.put(["task_start", task])
 
@@ -146,9 +158,9 @@ class RelayPort:
                 for sock in [client_writer, kernel_writer]:
                     sock.close()
                 for task in [
-                        asyncio.current_task(),
-                        client2kernel_task,
-                        kernel2client_task,
+                    asyncio.current_task(),
+                    client2kernel_task,
+                    kernel2client_task,
                 ]:
                     await status_q.put(["task_end", task])
                 if exit_status:
@@ -156,10 +168,14 @@ class RelayPort:
             except asyncio.CancelledError:  # pylint: disable=try-except-raise
                 raise
             except Exception as err:  # pylint: disable=broad-except
-                print(f"{PKG_NAME}: {self.name} client_connected got exception {err}; {traceback.format_exc(-1)}")
+                print(
+                    f"{PKG_NAME}: {self.name} client_connected got exception {err}; {traceback.format_exc(-1)}"
+                )
 
         if self.verbose >= 3:
-            print(f"{PKG_NAME}: {self.name} listening for jupyter client at {self.client_host}:{self.client_port}")
+            print(
+                f"{PKG_NAME}: {self.name} listening for jupyter client at {self.client_host}:{self.client_port}"
+            )
         self.client_server = await asyncio.start_server(client_connected, self.client_host, self.client_port)
 
     async def client_server_stop(self) -> None:
@@ -181,7 +197,9 @@ class RelayPort:
             while True:
                 data = await reader.read(8192)
                 if len(data) == 0:
-                    print(f"{PKG_NAME}: {self.name} {dir_str}: read EOF; shutdown with exit_status={exit_status}")
+                    print(
+                        f"{PKG_NAME}: {self.name} {dir_str}: read EOF; shutdown with exit_status={exit_status}"
+                    )
                     await exit_q.put(exit_status)
                     return
                 if self.verbose >= 4:
@@ -209,11 +227,17 @@ async def kernel_run(config: dict, verbose: int) -> None:
     hass_proxy = CONFIG_SETTINGS["hass_proxy"]
     verify_ssl = CONFIG_SETTINGS["verify_ssl"].lower() == "true"
 
-    connector = proxy.ProxyConnector.from_url(hass_proxy) if hass_proxy else aiohttp.TCPConnector(verify_ssl=verify_ssl)
+    connector = (
+        proxy.ProxyConnector.from_url(hass_proxy)
+        if hass_proxy
+        else aiohttp.TCPConnector(verify_ssl=verify_ssl)
+    )
     headers = {"Authorization": f'Bearer {CONFIG_SETTINGS["hass_token"]}'}
     session = aiohttp.ClientSession(connector=connector, headers=headers, raise_for_status=True)
 
-    async def do_request(url: StrOrURL, data: Any = None, json_data: Any = None, **kwargs: Any) -> ClientResponse:
+    async def do_request(
+        url: StrOrURL, data: Any = None, json_data: Any = None, **kwargs: Any
+    ) -> ClientResponse:
         """Do a GET or POST with the given URL."""
         try:
             method = "POST" if data or json_data else "GET"
@@ -225,7 +249,9 @@ async def kernel_run(config: dict, verbose: int) -> None:
             print(f"{PKG_NAME}: unable to connect to host {err.host}:{err.port} ({err.strerror})")
             sys.exit(1)
         except aiohttp.ClientResponseError as err:
-            print(f"{PKG_NAME}: request failed with {err.status}: {err.message} (url={err.request_info.url})")
+            print(
+                f"{PKG_NAME}: request failed with {err.status}: {err.message} (url={err.request_info.url})"
+            )
             await session.close()
             sys.exit(1)
         except Exception as err:
@@ -351,8 +377,12 @@ def main() -> None:
     """Main function: start a new pyscript kernel."""
 
     parser = argparse.ArgumentParser(prog=PKG_NAME)
-    parser.add_argument("-v", "--verbose", action="count", help="increase verbosity (repeat up to 4x)", default=0)
-    parser.add_argument("-k", "--kernel-name", type=str, help="kernel name", default="pyscript", dest="kernel_name")
+    parser.add_argument(
+        "-v", "--verbose", action="count", help="increase verbosity (repeat up to 4x)", default=0
+    )
+    parser.add_argument(
+        "-k", "--kernel-name", type=str, help="kernel name", default="pyscript", dest="kernel_name"
+    )
     parser.add_argument("-f", "--f", type=str, help="json config file", dest="config_file")
     parser.add_argument("--ip", type=str, help="ip address")
     parser.add_argument("--stdin", type=int, help="stdin port")
@@ -360,7 +390,9 @@ def main() -> None:
     parser.add_argument("--hb", type=int, help="hb port")
     parser.add_argument("--shell", type=int, help="shell port")
     parser.add_argument("--iopub", type=int, help="iopub port")
-    parser.add_argument("--Session.signature_scheme", dest="signature_scheme", type=str, help="signature scheme")
+    parser.add_argument(
+        "--Session.signature_scheme", dest="signature_scheme", type=str, help="signature scheme"
+    )
     parser.add_argument("--Session.key", type=str, dest="key", help="session key")
     parser.add_argument("--transport", type=str, help="transport")
 
@@ -394,7 +426,9 @@ def main() -> None:
             if value is None:
                 missing.append(arg)
         if missing:
-            print(f"{PKG_NAME}: missing arguments: --{', --'.join(missing)}, (or specify --f config_file instead)")
+            print(
+                f"{PKG_NAME}: missing arguments: --{', --'.join(missing)}, (or specify --f config_file instead)"
+            )
             sys.exit(1)
 
     if args.verbose >= 1:
