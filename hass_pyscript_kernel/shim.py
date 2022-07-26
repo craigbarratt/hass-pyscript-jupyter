@@ -37,6 +37,7 @@ CONFIG_DEFAULTS = {
     "hass_url": "http://${hass_host}:8123",
     "hass_token": "",
     "hass_proxy": "",
+    "verify_ssl": "True",
 }
 CONFIG_SETTINGS = {}
 
@@ -78,7 +79,12 @@ class RelayPort:
     """Define the RelayPort class, that does full-duplex forwarding between TCP endpoints."""
 
     def __init__(
-        self, name: str, kernel_port: int, client_host: str, client_port: int, verbose: int = 0,
+        self,
+        name: str,
+        kernel_port: int,
+        client_host: str,
+        client_port: int,
+        verbose: int = 0,
     ):
         """Initialize a relay port."""
         self.name = name
@@ -219,8 +225,13 @@ async def kernel_run(config: dict, verbose: int) -> None:
     hass_host = CONFIG_SETTINGS["hass_host"]
     hass_url = CONFIG_SETTINGS["hass_url"].rstrip("/")
     hass_proxy = CONFIG_SETTINGS["hass_proxy"]
+    verify_ssl = CONFIG_SETTINGS["verify_ssl"].lower() == "true"
 
-    connector = proxy.ProxyConnector.from_url(hass_proxy) if hass_proxy else None
+    connector = (
+        proxy.ProxyConnector.from_url(hass_proxy)
+        if hass_proxy
+        else aiohttp.TCPConnector(verify_ssl=verify_ssl)
+    )
     headers = {"Authorization": f'Bearer {CONFIG_SETTINGS["hass_token"]}'}
     session = aiohttp.ClientSession(connector=connector, headers=headers, raise_for_status=True)
 
@@ -231,6 +242,9 @@ async def kernel_run(config: dict, verbose: int) -> None:
         try:
             method = "POST" if data or json_data else "GET"
             return await session.request(method=method, url=url, data=data, json=json_data, **kwargs)
+        except aiohttp.ClientSSLError as err:  # Help diagnose if issue is an SSL Certificate error
+            print(f"{PKG_NAME}: got SSL error {err}")
+            sys.exit(1)
         except aiohttp.ClientConnectorError as err:
             print(f"{PKG_NAME}: unable to connect to host {err.host}:{err.port} ({err.strerror})")
             sys.exit(1)
@@ -305,7 +319,11 @@ async def kernel_run(config: dict, verbose: int) -> None:
     relay_ports = {}
     for port_name in port_names:
         relay_ports[port_name] = RelayPort(
-            port_name, port_nums[port_name], config["ip"], config[port_name], verbose=verbose,
+            port_name,
+            port_nums[port_name],
+            config["ip"],
+            config[port_name],
+            verbose=verbose,
         )
         await relay_ports[port_name].client_server_start(status_q)
 
