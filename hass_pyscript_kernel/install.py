@@ -50,6 +50,11 @@ def install(target_dir, kernel_name):
         "argv": argv,
         "display_name": f"hass {kernel_name}",
         "language": "python",
+        "metadata": {
+            "interpreter": {
+                "path": "python"
+            }
+        }
     }
 
     with open(os.path.join(target_dir, "kernel.json"), "w") as ofd:
