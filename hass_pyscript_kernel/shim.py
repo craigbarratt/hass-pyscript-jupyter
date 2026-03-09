@@ -236,12 +236,12 @@ async def kernel_run(config: dict, verbose: int) -> None:
     session = aiohttp.ClientSession(connector=connector, headers=headers, raise_for_status=True)
 
     async def do_request(
-        url: StrOrURL, data: Any = None, json_data: Any = None, **kwargs: Any
+        url: StrOrURL, data: Any = None, json_data: Any = None
     ) -> ClientResponse:
         """Do a GET or POST with the given URL."""
         try:
             method = "POST" if data or json_data else "GET"
-            return await session.request(method=method, url=url, data=data, json=json_data, **kwargs)
+            return await session.request(method=method, url=url, data=data, json=json_data)
         except aiohttp.ClientSSLError as err:  # Help diagnose if issue is an SSL Certificate error
             print(f"{PKG_NAME}: got SSL error {err}")
             sys.exit(1)
