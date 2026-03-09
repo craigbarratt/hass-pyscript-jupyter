@@ -31,6 +31,7 @@ setup(
         "aiohttp_socks",
         "jupyter-client",
         "jupyter-core",
+        "ipykernel"
     ],
     python_requires=">=3.7",
     zip_safe=False,
